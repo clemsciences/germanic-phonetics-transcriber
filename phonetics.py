@@ -1,45 +1,66 @@
-"""
-https://fr.wikipedia.org/wiki/%C3%89criture_du_vieux_norrois
 
-Altnordisches Elementarbuch by Friedrich Ranke and Dietrich Hofmann
-"""
+
 import re
-import unicodedata
+from cltk.utils.cltk_logger import logger
 
-__author__ = "Clément Besnier"
+__author__ = ["Clément Besnier <clemsciences@gmail.com>"]
 
-# Consonants
+# Definition of consonants
 PLACES = ["bilabial", "labio-dental", "dental", "alveolar", "post-alveolar", "retroflex", "palatal", "velar", "uvular",
           "glottal"]
 MANNERS = ["nasal", "stop", "lateral", "frictative", "trill"]
 
 
 class AbstractConsonant:
-    def __init__(self, place=None, manner=None, voiced=None, ipar=None):
+    """
+    Used with AbstractPosition to define an environment of a sound
+    """
+    def __init__(self, place=None, manner=None, voiced=None, ipar=None, geminate=None):
         if place in PLACES or place is None:
             self.place = place
         else:
-            raise ValueError
+            logger.error("Incorrect argument")
         if manner in MANNERS or manner is None:
             self.manner = manner
         else:
+            logger.error("Incorrect argument")
             raise ValueError
         if type(voiced) == bool or voiced is None:
             self.voiced = voiced
         else:
+            logger.error("Incorrect argument")
+            raise TypeError
+        if type(geminate) == bool or geminate is None:
+            self.geminate = geminate
+        else:
+            logger.error("Incorrect argument")
             raise TypeError
         self.ipar = ipar
 
 
 class Consonant(AbstractConsonant):
-    def __init__(self, place, manner, voiced, ipar):
+    """
+    https://en.wikipedia.org/wiki/Consonant
+    A consonant is defined mostly by the its place (where in the vocal tract the obstruction of the consonant occurs,
+    and which speech organs are involved), its manner  how air escapes from the vocal tract when the consonant or
+    approximant (vowel-like) sound is made), by if it is voiced or not, its length (if it is geminate). An IPA
+    transcription is given (https://en.wikipedia.org/wiki/International_Phonetic_Alphabet)
+    """
+    def __init__(self, place, manner, voiced, ipar, geminate):
         assert place is not None
         assert manner is not None
         assert voiced is not None
         assert ipar is not None
-        AbstractConsonant.__init__(self, place, manner, voiced, ipar)
+        assert geminate is not None
+        AbstractConsonant.__init__(self, place, manner, voiced, ipar, geminate)
 
-    def match(self, abstract_consonant) -> bool:
+    def match(self, abstract_consonant: AbstractConsonant) -> bool:
+        """
+        A real consonant matches an abstract consonant if and only if the required features of the abstract consonant
+        are also features of the real consonant.
+        :param abstract_consonant: AbstractConsonant
+        :return: bool
+        """
         if isinstance(abstract_consonant, AbstractConsonant):
             res = True
             if abstract_consonant.place is not None:
@@ -48,12 +69,26 @@ class Consonant(AbstractConsonant):
                 res = res and abstract_consonant.manner == self.manner
             if abstract_consonant.voiced is not None:
                 res = res and abstract_consonant.voiced == self.voiced
+            if abstract_consonant.geminate is not None:
+                res = res and abstract_consonant.geminate == self.geminate
             return res
         elif abstract_consonant is None:
             return True
-
         else:
             return False
+
+    def lengthen(self):
+        """
+
+        :return: a new lengthened Consonant
+        """
+        geminate = True
+        if not self.geminate:
+            ipar = self.ipar + "ː"
+        else:
+            ipar = self.ipar
+
+        return Consonant(self.place, self.manner, self.voiced, ipar, geminate)
 
 
 # Vowels
@@ -63,27 +98,38 @@ LENGTHS = ["short", "long", "overlong"]
 
 
 class AbstractVowel:
+    """
+    Used with AbstractPosition to define an environment of a sound
+    """
     def __init__(self, height=None, backness=None, rounded=None, length=None, ipar=None):
         if height in HEIGHT or height is None:
             self.height = height
         else:
+            logger.error("Incorrect argument")
             raise ValueError
         if backness in BACKNESS or backness is None:
             self.backness = backness
         else:
+            logger.error("Incorrect argument")
             raise ValueError
         if type(rounded) == bool or rounded is None:
             self.rounded = rounded
         else:
+            logger.error("Incorrect argument")
             raise TypeError
         if length in LENGTHS or length is None:
             self.length = length
         else:
+            logger.error("Incorrect argument")
             raise ValueError
         self.ipar = ipar
 
 
 class Vowel(AbstractVowel):
+    """
+    https://en.wikipedia.org/wiki/Vowel
+
+    """
     def __init__(self, height, backness, rounded, length, ipar):
         assert height is not None
         assert backness is not None
@@ -93,9 +139,13 @@ class Vowel(AbstractVowel):
         AbstractVowel.__init__(self, height, backness, rounded, length, ipar)
 
     def lengthen(self):
+        """
+
+        :return: a new lengthened Vowel
+        """
         if self.length == "short":
             length = "long"
-            ipar = self.ipar + ":"
+            ipar = self.ipar + "ː"
         else:
             ipar = self.ipar
             length = "short"
@@ -131,19 +181,39 @@ class Vowel(AbstractVowel):
 POSITIONS = ["first", "inner", "last"]
 
 
-class Position:
+class AbstractPosition:
+    """
+    This is a position (at the beginning, inside or at the end) that a rule can be applied at,
+     a sound or a set of sounds before and a sound or a set of sounds after
+    """
     def __init__(self, position, before, after):
+        assert position in POSITIONS
         self.position = position
+        # assert isinstance(before, AbstractConsonant) or isinstance(before, AbstractVowel)
         self.before = before
+        # assert isinstance(after, AbstractConsonant) or isinstance(after, AbstractVowel)
         self.after = after
 
-    def real_sound_match_abstract_sound(self, abstract_pos) -> bool:
+
+class Position:
+    """
+    This is a position (at the beginning, inside or at the end) of a an observed word, a sound before and a sound after
+    """
+    def __init__(self, position, before, after):
+        assert position in POSITIONS
+        self.position = position
+        assert isinstance(before, Consonant) or isinstance(before, Vowel) or before is None
+        self.before = before
+        assert isinstance(after, Consonant) or isinstance(after, Vowel) or after is None
+        self.after = after
+
+    def real_sound_match_abstract_sound(self, abstract_pos: AbstractPosition) -> bool:
         """
-        Problem !
+        If an observed position
         :param abstract_pos:
         :return:
         """
-        assert isinstance(abstract_pos, Position)
+        assert isinstance(abstract_pos, AbstractPosition)
         if self.before is not None and self.after is not None:
             return self.position == abstract_pos.position and self.before.match(abstract_pos.before) and \
                self.after.match(abstract_pos.after)
@@ -154,77 +224,90 @@ class Position:
         else:
             return self.position == abstract_pos.position and self.before.match(abstract_pos.before)
 
+
 class Rule:
+    """
+    A Rule iz used to transform one sound to another according to its direct environment
+    (the letter before and the letter after). If a rule is applicable, then it is applied.
+    """
     def __init__(self, position, temp_sound, estimated_sound):
-        assert isinstance(position, Position)
+        """
+
+        :param position: AbstractPosition
+        :param temp_sound: Vowel or Consonant
+        :param estimated_sound: Vowel or Consonant
+        """
+        assert isinstance(position, AbstractPosition)
         self.position = position
-        assert isinstance(temp_sound, AbstractVowel) or isinstance(temp_sound, AbstractConsonant)
+        assert isinstance(temp_sound, Vowel) or isinstance(temp_sound, Consonant)
         self.temp_sound = temp_sound
-        assert isinstance(estimated_sound, AbstractVowel) or isinstance(estimated_sound, AbstractConsonant)
+        assert isinstance(estimated_sound, Vowel) or isinstance(estimated_sound, Consonant)
         self.estimated_sound = estimated_sound
 
-    def apply(self, character, current_position: Position):
+    def apply(self, current_position: Position) -> bool:
+        """
+        A Rule is applied if and only if a letter has a direct environment (the sound just before and the sound just
+        after) which matches the environment of Rule
+        :param current_position:
+        :return: bool
+        """
         return current_position.real_sound_match_abstract_sound(self.position)
 
 
-
-# The first rule which matches is retained
-rule_th = [Rule(Position("first", None, None), th, th),
-           Rule(Position("inner", None, AbstractConsonant(voiced=True)), th, th),
-           Rule(Position("inner", AbstractConsonant(voiced=True), None), th, th),
-           Rule(Position("inner", None, None), th, dh),
-           Rule(Position("last", None, None), th, dh)]
-
-
-rule_f = [Rule(Position("first", None, None), f, f),
-          Rule(Position("inner", None, AbstractConsonant(voiced=False)), f, f),
-          Rule(Position("inner", AbstractConsonant(voiced=False), None), f, f),
-          Rule(Position("inner", None, None), f, v),
-          Rule(Position("last", None, None), f, v)]
-rule_g = [Rule(Position("first", None, None), g, g),
-          Rule(Position("inner", n, None), g, g),
-          Rule(Position("inner", None, AbstractConsonant(voiced=False)), g, k),
-          Rule(Position("inner", None, None), g, gh),
-          Rule(Position("last", None, None), g, gh)]
-
-
 class Transcriber:
-
+    """
+    There are two steps to transcribe words:
+        - firstly, a greedy approximation of the pronunciation of word
+        - then, use of rules to precise pronunciation of a preprocessed list of transcribed words
+    """
     def __init__(self):
         pass
 
-    def first_process(self, word: str):
+    def main(self, sentence: str, rules) -> str:
+        translitterated = []
+        sentence = sentence.lower()
+        sentence = re.sub(r"[.\";,:\[\]()!&?‘]", "", sentence)
+        for word in sentence.split(" "):
+            first_res = self.first_process(word)
+            second_res = self.second_process(first_res, rules)
+            translitterated.append(second_res)
+        return "[" + " ".join(translitterated) + "]"
+
+    @staticmethod
+    def first_process(word: str):
         """
-        Give a greedy approximation of the prononciation of word
+        Give a greedy approximation of the pronunciation of word
         :param word:
         :return:
         """
         first_res = []
-        # to_avoid = False
+        is_repeted = False
         if len(word) >= 2:
-            for i in range(len(word) - 1):
-                # if to_avoid:
-                #     to_avoid = False
-                #     continue
-                # elif word[i] == word[i+1]:  # geminate consonants
-                #     first_res.append(word[i])
-                #     to_avoid = True
-                if word[i:i + 2] in DIPHTONGS_IPA:  # diphtongs
-                    first_res.append(DIPHTONGS_IPA_class[word[i] + word[i + 1]])
+            for index in range(len(word) - 1):
+                if is_repeted:
+                    is_repeted = False
+                    continue
+                if word[index:index + 2] in DIPHTHONGS_IPA:  # diphthongs
+                    first_res.append(DIPHTHONGS_IPA_class[word[index] + word[index + 1]])
+                    is_repeted = True
+                elif word[index] == word[index+1]:
+                    first_res.append(IPA_class[word[index]].lengthen())
+                    is_repeted = True
                 else:
-                    first_res.append(IPA_class[word[i]])
-                    if i == len(word) - 2:
-                        first_res.append(IPA_class[word[i + 1]])
+                    first_res.append(IPA_class[word[index]])
+            if not is_repeted:
+                first_res.append(IPA_class[word[len(word) - 1]])
         else:
             first_res.append(IPA_class[word[0]])
         return first_res
 
-    def second_process(self, first_result, rules):
+    @staticmethod
+    def second_process(first_result, rules) -> str:
         """
-        Use of rules to precise pronunciation
-        :param first_result:
-        :param rules:
-        :return:
+        Use of rules to precise pronunciation of a preprocessed list of transcribed words
+        :param first_result: list(Vowel or Consonant)
+        :param rules: list(Rule)
+        :return: str
         """
         res = []
         if len(first_result) >= 2:
@@ -238,7 +321,7 @@ class Transcriber:
                 found = False
                 for rule in rules:
                     if rule.temp_sound.ipar == first_result[i].ipar:
-                        if rule.apply(first_result[i], current_pos):
+                        if rule.apply(current_pos):
                             res.append(rule.estimated_sound.ipar)
                             found = True
                             break
@@ -246,26 +329,17 @@ class Transcriber:
                     res.append(first_result[i].ipar)
         else:
             res.append(first_result[0].ipar)
-        # return "[" + "".join(res) + "]"
         return "".join(res)
 
-    def transcribe(self, text: str, punctuation=True):
-        """
-        Accepts a word and returns a string of an approximate pronounciation (IPA)
-        :param text: str
-        :param punctuation: boolean
-        :return:
-        """
 
-        if not punctuation:
-            text = re.sub(r"[\.\";\,\:\[\]\(\)!&?‘]", "", text)
-
-        for w, val in DIPHTONGS_IPA:
-            text = text.replace(w, val)
-
-        for w, val in IPA:
-            text = text.replace(w, val)
-
-        return "[" + text + "]"
-
+if __name__ == "__main__":
+    example_sentence = "Almáttigr guð skapaði í upphafi himin ok jörð ok alla þá hluti, er þeim fylgja, og " \
+                       "síðast menn tvá, er ættir eru frá komnar, Adam ok Evu, ok fjölgaðist þeira kynslóð ok " \
+                       "dreifðist um heim allan."
+    sentence = "Gylfi konungr var maðr vitr ok fjölkunnigr"
+    tr = Transcriber()
+    transcribed_sentence = tr.main(example_sentence, old_norse_rules)
+    print(transcribed_sentence)
+    transcribed_sentence = tr.main(sentence, old_norse_rules)
+    print(transcribed_sentence)
 

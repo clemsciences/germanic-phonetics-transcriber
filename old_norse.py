@@ -1,3 +1,8 @@
+"""
+https://fr.wikipedia.org/wiki/%C3%89criture_du_vieux_norrois
+
+Altnordisches Elementarbuch by Friedrich Ranke and Dietrich Hofmann
+"""
 
 from phonetics import *
 
@@ -16,26 +21,26 @@ oo = Vowel("open-mid", "back", True, "short", "ɔ")
 o = Vowel("close-mid", "back", True, "short", "o")
 u = Vowel("close", "back", True, "short", "u")
 
-b = Consonant("bilabial", "stop", True, "b")
-d = Consonant("alveolar", "stop", True, "d")
-f = Consonant("labio-dental", "frictative", False, "f")
-g = Consonant("velar", "stop", True, "g")
-gh = Consonant("velar", "frictative", True, "Ɣ")
-h = Consonant("glottal", "frictative", False, "h")
-j = Consonant("palatal", "frictative", True, "j")
-k = Consonant("velar", "stop", False, "k")
-l = Consonant("alveolar", "lateral", True, "l")
-m = Consonant("bilabial", "nasal", True, "m")
-n = Consonant("labio-dental", "nasal", True, "n")
-p = Consonant("bilabial", "stop", False, "p")
-r = Consonant("alveolar", "trill", False, "r")
-s = Consonant("alveolar", "frictative", False, "s")
-t = Consonant("alveolar", "stop", False, "t")
-v = Consonant("labio-dental", "frictative", True, "v")
+b = Consonant("bilabial", "stop", True, "b", False)
+d = Consonant("alveolar", "stop", True, "d", False)
+f = Consonant("labio-dental", "frictative", False, "f", False)
+g = Consonant("velar", "stop", True, "g", False)
+gh = Consonant("velar", "frictative", True, "ɣ", False)
+h = Consonant("glottal", "frictative", False, "h", False)
+j = Consonant("palatal", "frictative", True, "j", False)
+k = Consonant("velar", "stop", False, "k", False)
+l = Consonant("alveolar", "lateral", True, "l", False)
+m = Consonant("bilabial", "nasal", True, "m", False)
+n = Consonant("labio-dental", "nasal", True, "n", False)
+p = Consonant("bilabial", "stop", False, "p", False)
+r = Consonant("alveolar", "trill", True, "r", False)
+s = Consonant("alveolar", "frictative", False, "s", False)
+t = Consonant("alveolar", "stop", False, "t", False)
+v = Consonant("labio-dental", "frictative", True, "v", False)
 # θ = Consonant("dental", "frictative", False, "θ")
-th = Consonant("dental", "frictative", False, "θ")
+th = Consonant("dental", "frictative", False, "θ", False)
 # ð = Consonant("dental", "frictative", True, "ð")
-dh = Consonant("dental", "frictative", True, "ð")
+dh = Consonant("dental", "frictative", True, "ð", False)
 
 OLD_NORSE8_PHONOLOGY = [
     a, ee, e, oe, i, y, ao, oo, u, a.lengthen(),
@@ -46,13 +51,14 @@ OLD_NORSE8_PHONOLOGY = [
 
 
 # IPA Dictionary
-DIPHTONGS_IPA = {
-    "ey": "ɐy",  # Dipthongs
+DIPHTHONGS_IPA = {
+    "ey": "ɐy",  # Diphthongs
     "au": "ɒu",
     "øy": "ɐy",
     "ei": "ei",
 }
-DIPHTONGS_IPA_class = {
+# Wrong diphthongs implementation but not that bad for now
+DIPHTHONGS_IPA_class = {
     "ey": Vowel("open", "front", True, "short", "ɐy"),
     "au": Vowel("open", "back", True, "short", "ɒu"),
     "øy": Vowel("open", "front", True, "short", "ɐy"),
@@ -95,7 +101,6 @@ IPA = {
     "þ": "θ",
     "ð": "ð",
 }
-
 IPA_class = {
     "a": a,  # Short vowels
     "e": ee,
@@ -134,21 +139,45 @@ IPA_class = {
     "ð": dh,
 }
 GEMINATE_CONSONANTS = {
-    "bb": "b:",
-    "dd": "d:",
-    "ff": "f:",
-    "gg": "g:",
-    "kk": "k:",
-    "ll": "l:",
-    "mm": "m:",
-    "nn": "n:",
-    "pp": "p:",
-    "rr": "r:",
-    "ss": "s:",
-    "tt": "t:",
-    "vv": "v:",
+    "bb": "bː",
+    "dd": "dː",
+    "ff": "fː",
+    "gg": "gː",
+    "kk": "kː",
+    "ll": "lː",
+    "mm": "mː",
+    "nn": "nː",
+    "pp": "pː",
+    "rr": "rː",
+    "ss": "sː",
+    "tt": "tː",
+    "vv": "vː",
 }
 
+# Some Old Norse rules
+# The first rule which matches is retained
+rule_th = [Rule(AbstractPosition("first", None, None), th, th),
+           Rule(AbstractPosition("inner", None, AbstractConsonant(voiced=True)), th, th),
+           Rule(AbstractPosition("inner", AbstractConsonant(voiced=True), None), th, th),
+           Rule(AbstractPosition("inner", None, None), th, dh),
+           Rule(AbstractPosition("last", None, None), th, dh)]
+
+
+rule_f = [Rule(AbstractPosition("first", None, None), f, f),
+          Rule(AbstractPosition("inner", None, AbstractConsonant(voiced=False)), f, f),
+          Rule(AbstractPosition("inner", AbstractConsonant(voiced=False), None), f, f),
+          Rule(AbstractPosition("inner", None, None), f, v),
+          Rule(AbstractPosition("last", None, None), f, v)]
+rule_g = [Rule(AbstractPosition("first", None, None), g, g),
+          Rule(AbstractPosition("inner", n, None), g, g),
+          Rule(AbstractPosition("inner", None, AbstractConsonant(voiced=False)), g, k),
+          Rule(AbstractPosition("inner", None, None), g, gh),
+          Rule(AbstractPosition("last", None, None), g, gh)]
+
+old_norse_rules = []
+old_norse_rules.extend(rule_f)
+old_norse_rules.extend(rule_g)
+old_norse_rules.extend(rule_th)
 
 if __name__ == "__main__":
     # Word()lpp
