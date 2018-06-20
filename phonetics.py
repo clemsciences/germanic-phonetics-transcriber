@@ -1,4 +1,6 @@
-
+"""
+Class which would eventually be used by old_norse.transcription.py, gothic.transcription.py, old_swedish.transciption.py
+"""
 
 import re
 from cltk.utils.cltk_logger import logger
@@ -8,7 +10,7 @@ __author__ = ["Clément Besnier <clemsciences@gmail.com>"]
 # Definition of consonants
 PLACES = ["bilabial", "labio-dental", "dental", "alveolar", "post-alveolar", "retroflex", "palatal", "velar", "uvular",
           "glottal"]
-MANNERS = ["nasal", "stop", "lateral", "frictative", "trill"]
+MANNERS = ["nasal", "stop", "lateral", "frictative", "trill", "spirant"]
 
 
 class AbstractConsonant:
@@ -36,6 +38,9 @@ class AbstractConsonant:
             logger.error("Incorrect argument")
             raise TypeError
         self.ipar = ipar
+
+    def __str__(self):
+        return self.ipar
 
 
 class Consonant(AbstractConsonant):
@@ -90,6 +95,9 @@ class Consonant(AbstractConsonant):
 
         return Consonant(self.place, self.manner, self.voiced, ipar, geminate)
 
+    def __add__(self, other):
+        return Consonant(self.place, self.manner, self.voiced, self.ipar + other.ipar, False)
+
 
 # Vowels
 HEIGHT = ["open", "near-open", "open-mid", "mid", "close-mid", "near-close", "close"]
@@ -123,6 +131,9 @@ class AbstractVowel:
             logger.error("Incorrect argument")
             raise ValueError
         self.ipar = ipar
+
+    def __str__(self):
+        return self.ipar
 
 
 class Vowel(AbstractVowel):
@@ -260,21 +271,30 @@ class Transcriber:
         - firstly, a greedy approximation of the pronunciation of word
         - then, use of rules to precise pronunciation of a preprocessed list of transcribed words
     """
-    def __init__(self):
-        pass
+    def __init__(self, diphthongs_ipa, diphthongs_ipa_class, ipa_class, rules):
+        """
 
-    def main(self, sentence: str, rules) -> str:
+        :param diphthongs_ipa: dict whose keys are written diphthongs and and values IPA trasncription of them
+        :param diphthongs_ipa_class: dict whose keys are written diphthongs and and values are Vowel instances
+        :param ipa_class: dict whose keys are written characters and and values are Vowel or Consonant instances
+        :param rules: list of Rule instances
+        """
+        self.diphthongs_ipa = diphthongs_ipa
+        self.diphthongs_ipa_class = diphthongs_ipa_class
+        self.ipa_class = ipa_class
+        self.rules = rules
+
+    def main(self, sentence: str) -> str:
         translitterated = []
         sentence = sentence.lower()
         sentence = re.sub(r"[.\";,:\[\]()!&?‘]", "", sentence)
         for word in sentence.split(" "):
             first_res = self.first_process(word)
-            second_res = self.second_process(first_res, rules)
+            second_res = self.second_process(first_res)
             translitterated.append(second_res)
         return "[" + " ".join(translitterated) + "]"
 
-    @staticmethod
-    def first_process(word: str):
+    def first_process(self, word: str):
         """
         Give a greedy approximation of the pronunciation of word
         :param word:
@@ -287,26 +307,24 @@ class Transcriber:
                 if is_repeted:
                     is_repeted = False
                     continue
-                if word[index:index + 2] in DIPHTHONGS_IPA:  # diphthongs
-                    first_res.append(DIPHTHONGS_IPA_class[word[index] + word[index + 1]])
+                if word[index:index + 2] in self.diphthongs_ipa:  # diphthongs
+                    first_res.append(self.diphthongs_ipa_class[word[index] + word[index + 1]])
                     is_repeted = True
                 elif word[index] == word[index+1]:
-                    first_res.append(IPA_class[word[index]].lengthen())
+                    first_res.append(self.ipa_class[word[index]].lengthen())
                     is_repeted = True
                 else:
-                    first_res.append(IPA_class[word[index]])
+                    first_res.append(self.ipa_class[word[index]])
             if not is_repeted:
-                first_res.append(IPA_class[word[len(word) - 1]])
+                first_res.append(self.ipa_class[word[len(word) - 1]])
         else:
-            first_res.append(IPA_class[word[0]])
+            first_res.append(self.ipa_class[word[0]])
         return first_res
 
-    @staticmethod
-    def second_process(first_result, rules) -> str:
+    def second_process(self, first_result) -> str:
         """
         Use of rules to precise pronunciation of a preprocessed list of transcribed words
         :param first_result: list(Vowel or Consonant)
-        :param rules: list(Rule)
         :return: str
         """
         res = []
@@ -319,7 +337,7 @@ class Transcriber:
                 else:
                     current_pos = Position("last", first_result[i - 1], None)
                 found = False
-                for rule in rules:
+                for rule in self.rules:
                     if rule.temp_sound.ipar == first_result[i].ipar:
                         if rule.apply(current_pos):
                             res.append(rule.estimated_sound.ipar)
@@ -330,16 +348,3 @@ class Transcriber:
         else:
             res.append(first_result[0].ipar)
         return "".join(res)
-
-
-if __name__ == "__main__":
-    example_sentence = "Almáttigr guð skapaði í upphafi himin ok jörð ok alla þá hluti, er þeim fylgja, og " \
-                       "síðast menn tvá, er ættir eru frá komnar, Adam ok Evu, ok fjölgaðist þeira kynslóð ok " \
-                       "dreifðist um heim allan."
-    sentence = "Gylfi konungr var maðr vitr ok fjölkunnigr"
-    tr = Transcriber()
-    transcribed_sentence = tr.main(example_sentence, old_norse_rules)
-    print(transcribed_sentence)
-    transcribed_sentence = tr.main(sentence, old_norse_rules)
-    print(transcribed_sentence)
-
