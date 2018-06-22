@@ -146,10 +146,10 @@ GEMINATE_CONSONANTS = {
 # Some Old Norse rules
 # The first rule which matches is retained
 
-rule_th = [Rule(AbstractPosition("inner", AbstractVowel(), AbstractVowel()), th, dh),
-           Rule(AbstractPosition("last", AbstractConsonant(), None), th, dh),
+rule_th = [Rule(AbstractPosition("inner", [AbstractVowel()], [AbstractVowel()]), th, dh),
+           Rule(AbstractPosition("last", [AbstractConsonant()], None), th, dh),
            Rule(AbstractPosition("first", None, None), th, th),
-           Rule(AbstractPosition("last", r, None), th, dh)]
+           Rule(AbstractPosition("last", [r], None), th, dh)]
 
 
 old_swedish_rules = []
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     example_sentence = ""
     sentence = ""
     tr = Transcriber(DIPHTHONGS_IPA, DIPHTHONGS_IPA_class, IPA_class, old_swedish_rules)
-    transcribed_sentence = tr.main(example_sentence, )
+    transcribed_sentence = tr.main(example_sentence)
     print(transcribed_sentence)
     transcribed_sentence = tr.main(sentence)
     print(transcribed_sentence)

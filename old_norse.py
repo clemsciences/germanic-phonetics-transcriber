@@ -157,20 +157,20 @@ GEMINATE_CONSONANTS = {
 # Some Old Norse rules
 # The first rule which matches is retained
 rule_th = [Rule(AbstractPosition("first", None, None), th, th),
-           Rule(AbstractPosition("inner", None, AbstractConsonant(voiced=True)), th, th),
-           Rule(AbstractPosition("inner", AbstractConsonant(voiced=True), None), th, th),
+           Rule(AbstractPosition("inner", None, [AbstractConsonant(voiced=True)]), th, th),
+           Rule(AbstractPosition("inner", [AbstractConsonant(voiced=True)], None), th, th),
            Rule(AbstractPosition("inner", None, None), th, dh),
            Rule(AbstractPosition("last", None, None), th, dh)]
 
 
 rule_f = [Rule(AbstractPosition("first", None, None), f, f),
-          Rule(AbstractPosition("inner", None, AbstractConsonant(voiced=False)), f, f),
-          Rule(AbstractPosition("inner", AbstractConsonant(voiced=False), None), f, f),
+          Rule(AbstractPosition("inner", None, [AbstractConsonant(voiced=False)]), f, f),
+          Rule(AbstractPosition("inner", [AbstractConsonant(voiced=False)], None), f, f),
           Rule(AbstractPosition("inner", None, None), f, v),
           Rule(AbstractPosition("last", None, None), f, v)]
 rule_g = [Rule(AbstractPosition("first", None, None), g, g),
-          Rule(AbstractPosition("inner", n, None), g, g),
-          Rule(AbstractPosition("inner", None, AbstractConsonant(voiced=False)), g, k),
+          Rule(AbstractPosition("inner", [n], None), g, g),
+          Rule(AbstractPosition("inner", None, [AbstractConsonant(voiced=False)]), g, k),
           Rule(AbstractPosition("inner", None, None), g, gh),
           Rule(AbstractPosition("last", None, None), g, gh)]
 
@@ -196,11 +196,11 @@ if __name__ == "__main__":
         rules.extend(rule_f)
         rules.extend(rule_g)
         rules.extend(rule_th)
-        tr = Transcriber()
+        tr = Transcriber(DIPHTHONGS_IPA, DIPHTHONGS_IPA_class, IPA_class, rules)
         first_res = tr.first_process(word)
         print([type(c) for c in first_res])
         print([c.ipar for c in first_res])
-        second_res = tr.second_process(first_res, rules)
+        second_res = tr.second_process(first_res)
         print(second_res)
         translitterated.append(second_res)
     print(s1)
