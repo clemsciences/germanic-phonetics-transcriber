@@ -6,7 +6,7 @@ Altnordisches Elementarbuch by Friedrich Ranke and Dietrich Hofmann
 
 from phonetics import *
 
-__author__ = "Clément Besnier"
+__author__ = ["Clément Besnier <clemsciences@gmail.com>"]
 
 
 a = Vowel("open", "front", False, "short", "a")
@@ -16,7 +16,7 @@ oee = Vowel("close-mid", "front", True, "short", "ø")
 oe = Vowel("open-mid", "front", True, "short", "œ")
 i = Vowel("close", "front", False, "short", "i")
 y = Vowel("close", "front", True, "short", "y")
-ao = Vowel("open", "back", True, "short", "ɒ"),
+ao = Vowel("open", "back", True, "short", "ɒ")
 oo = Vowel("open-mid", "back", True, "short", "ɔ")
 o = Vowel("close-mid", "back", True, "short", "o")
 u = Vowel("close", "back", True, "short", "u")
@@ -47,7 +47,6 @@ OLD_NORSE8_PHONOLOGY = [
     e.lengthen(), i.lengthen(), o.lengthen(), u.lengthen(),
     y.lengthen(), b, d, f, g, h, k, l, m, n, p, r, s, t, v, th, dh
 ]
-
 
 
 # IPA Dictionary
@@ -179,29 +178,15 @@ old_norse_rules.extend(rule_f)
 old_norse_rules.extend(rule_g)
 old_norse_rules.extend(rule_th)
 
+
 if __name__ == "__main__":
-    # Word()lpp
+    example_sentence = "Almáttigr guð skapaði í upphafi himin ok jörð ok alla þá hluti, er þeim fylgja, og " \
+                       "síðast menn tvá, er ættir eru frá komnar, Adam ok Evu, ok fjölgaðist þeira kynslóð ok " \
+                       "dreifðist um heim allan."
     sentence = "Gylfi konungr var maðr vitr ok fjölkunnigr"
-    s1 = "almáttigr guð skapaði í upphafi himin ok jörð ok alla þá hluti, er þeim fylgja, og síðast menn tvá, " \
-         "er ættir eru frá komnar, adam ok evu, ok fjölgaðist þeira kynslóð ok dreifðist um heim allan."
-    s1 = s1.replace(",", "")
-    s1 = s1.replace(".", "")
-    print(s1)
-    translitterated = []
-    for w in s1.split(" "):
-        # word = "vagfa"
-        word = w
-        print(word)
-        rules = []
-        rules.extend(rule_f)
-        rules.extend(rule_g)
-        rules.extend(rule_th)
-        tr = Transcriber()
-        first_res = tr.first_process(word)
-        print([type(c) for c in first_res])
-        print([c.ipar for c in first_res])
-        second_res = tr.second_process(first_res, rules)
-        print(second_res)
-        translitterated.append(second_res)
-    print(s1)
-    print("["+" ".join(translitterated)+"]")
+    tr = Transcriber()
+    transcribed_sentence = tr.main(example_sentence, old_norse_rules)
+    print(transcribed_sentence)
+    transcribed_sentence = tr.main(sentence, old_norse_rules)
+    print(transcribed_sentence)
+

@@ -19,9 +19,8 @@ class TestSequenceFunctions(unittest.TestCase):
                            "síðast menn tvá, er ættir eru frá komnar, Adam ok Evu, ok fjölgaðist þeira kynslóð ok " \
                            "dreifðist um heim allan."
 
-        tr = old_norse.Transcriber(old_norse.DIPHTHONGS_IPA,
-                                   old_norse.DIPHTHONGS_IPA_class, old_norse.IPA_class, old_norse.old_norse_rules)
-        transcribed_sentence = tr.main(example_sentence)
+        tr = Transcriber()
+        transcribed_sentence = tr.main(example_sentence, old_norse.old_norse_rules)
         target = "[almaːtːiɣr guð skapaði iː upːhavi himin ɔk jœrð ɔk alːa θaː hluti ɛr θɛim fylɣja ɔɣ siːðast mɛnː " \
                  "tvaː ɛr ɛːtːir ɛru fraː kɔmnar adam ɔk ɛvu ɔk fjœlɣaðist θɛira kynsloːð ɔk drɛivðist um hɛim alːan]"
         self.assertEqual(target, transcribed_sentence)
@@ -29,10 +28,10 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_gothic_transcriber(self):
         example_sentence = "Anastodeins aiwaggeljons Iesuis Xristaus sunaus gudis."
 
-        tr = gothic.Transcriber(gothic.DIPHTHONGS_IPA,
-                                gothic.DIPHTHONGS_IPA_class, gothic.IPA_class, gothic.gothic_rules)
+        tr = ut.Transcriber(gothic.DIPHTHONGS_IPA,
+                            gothic.DIPHTHONGS_IPA_class, gothic.IPA_class, gothic.gothic_rules)
         transcribed_sentence = tr.main(example_sentence)
-        target = "[anastɔdɛins aiwagːɛljɔns iɛsuis ksristaus sunaus gudis]"
+        target = "[anastoːðiːns ɛwaŋgeːljoːns jeːsuis kristɔs sunɔs guðis]"
         self.assertEqual(target, transcribed_sentence)
 
     def test_old_swedish(self):
