@@ -1,5 +1,5 @@
 """
-
+Factorize code
 """
 
 import re
@@ -9,7 +9,7 @@ __author__ = ["Clément Besnier <clemsciences@gmail.com>"]
 # Definition of consonants
 PLACES = ["bilabial", "labio-dental", "dental", "alveolar", "post-alveolar", "retroflex", "palatal", "velar", "uvular",
           "glottal"]
-MANNERS = ["nasal", "stop", "lateral", "frictative", "trill", "spirant"]
+MANNERS = ["nasal", "stop", "lateral", "frictative", "trill"]
 
 
 class AbstractConsonant:
