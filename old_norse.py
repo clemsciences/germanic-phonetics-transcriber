@@ -183,10 +183,8 @@ if __name__ == "__main__":
     example_sentence = "Almáttigr guð skapaði í upphafi himin ok jörð ok alla þá hluti, er þeim fylgja, og " \
                        "síðast menn tvá, er ættir eru frá komnar, Adam ok Evu, ok fjölgaðist þeira kynslóð ok " \
                        "dreifðist um heim allan."
-    sentence = "Gylfi konungr var maðr vitr ok fjölkunnigr"
-    tr = Transcriber()
-    transcribed_sentence = tr.main(example_sentence, old_norse_rules)
-    print(transcribed_sentence)
-    transcribed_sentence = tr.main(sentence, old_norse_rules)
+
+    tr = ut.Transcriber(DIPHTHONGS_IPA, DIPHTHONGS_IPA_class, IPA_class, old_norse_rules)
+    transcribed_sentence = tr.main(example_sentence)
     print(transcribed_sentence)
 

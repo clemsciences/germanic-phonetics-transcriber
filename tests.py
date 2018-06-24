@@ -19,8 +19,10 @@ class TestSequenceFunctions(unittest.TestCase):
                            "síðast menn tvá, er ættir eru frá komnar, Adam ok Evu, ok fjölgaðist þeira kynslóð ok " \
                            "dreifðist um heim allan."
 
-        tr = Transcriber()
-        transcribed_sentence = tr.main(example_sentence, old_norse.old_norse_rules)
+        tr = ut.Transcriber(old_norse.DIPHTHONGS_IPA, old_norse.DIPHTHONGS_IPA_class, old_norse.IPA_class,
+                            old_norse.old_norse_rules)
+        transcribed_sentence = tr.main(example_sentence)
+        print(transcribed_sentence)
         target = "[almaːtːiɣr guð skapaði iː upːhavi himin ɔk jœrð ɔk alːa θaː hluti ɛr θɛim fylɣja ɔɣ siːðast mɛnː " \
                  "tvaː ɛr ɛːtːir ɛru fraː kɔmnar adam ɔk ɛvu ɔk fjœlɣaðist θɛira kynsloːð ɔk drɛivðist um hɛim alːan]"
         self.assertEqual(target, transcribed_sentence)
