@@ -3,8 +3,7 @@
 ### Available languages
 Old Norse, Old Swedish and Gothic are available to be phonetically transcribed.
 
-.. code-block:: python
-
+```python
     In [1]: from phonetics import *
   
     In [2]: import gothic, old_swedish, old_norse
@@ -34,5 +33,4 @@ Old Norse, Old Swedish and Gothic are available to be phonetically transcribed.
     In [12]: tr.main(sentence)
 
     Out [12]: "[gylvi kɔnungr var maðr vitr ɔk fjœlkunːiɣr]"
-  
-  
+```
