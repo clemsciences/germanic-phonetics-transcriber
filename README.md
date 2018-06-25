@@ -14,7 +14,8 @@ Old Norse, Old Swedish and Gothic are available to be phonetically transcribed.
   In [4]: tr = Transcriber(gothic.DIPHTHONGS_IPA, gothic.DIPHTHONGS_IPA_class, gothic.IPA_class, gothic.gothic_rules)
    
   In [5]: tr.main(example_sentence)
-      [anastoːðiːns ɛwaŋgeːljoːns jeːsuis kristɔs sunɔs guðis]"
+  
+  Out [5]: [anastoːðiːns ɛwaŋgeːljoːns jeːsuis kristɔs sunɔs guðis]"
       
   In [6]: sentence = "Far man kunu oc dör han för en hun far barn. oc sigher hun oc hænnæ frændær."
 
@@ -28,7 +29,7 @@ Old Norse, Old Swedish and Gothic are available to be phonetically transcribed.
 
   In [10]: sentence = "Gylfi konungr var maðr vitr ok fjölkunnigr"
 
-  In [11]: tr = ut.Transcriber(ont.DIPHTHONGS_IPA, ont.DIPHTHONGS_IPA_class, ont.IPA_class, ont.old_norse_rules)
+  In [11]: tr = Transcriber(ont.DIPHTHONGS_IPA, ont.DIPHTHONGS_IPA_class, ont.IPA_class, ont.old_norse_rules)
 
   In [12]: tr.main(sentence)
 
