@@ -3,11 +3,13 @@
 ### Available languages
 Old Norse, Old Swedish and Gothic are available to be phonetically transcribed.
 
-```python
+
+.. code-block:: python
+
     In [1]: from phonetics import *
-  
+
     In [2]: import gothic, old_swedish, old_norse
-  
+
     In [3]: example_sentence = "Anastodeins aiwaggeljons Iesuis Xristaus sunaus gudis."
 
     In [4]: tr = Transcriber(gothic.DIPHTHONGS_IPA, gothic.DIPHTHONGS_IPA_class, gothic.IPA_class, gothic.gothic_rules)
@@ -33,4 +35,3 @@ Old Norse, Old Swedish and Gothic are available to be phonetically transcribed.
     In [12]: tr.main(sentence)
 
     Out [12]: "[gylvi kɔnungr var maðr vitr ɔk fjœlkunːiɣr]"
-```
